@@ -1,0 +1,6 @@
+.venv/
+.cache/
+Vinyls/
+__pycache__/
+.DS_Store
+.claude/

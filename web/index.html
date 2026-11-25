@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autosampler</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d1c19'/><circle cx='16' cy='16' r='6' fill='%23e2552b'/></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main id="library">
+  <div class="lib">
+    <div class="mark"><i></i>Autosampler</div>
+    <ul id="songs"></ul>
+    <button id="add" class="ghost">Add song</button>
+    <input id="file" type="file" accept="audio/*" hidden>
+  </div>
+</main>
+
+<dialog id="sheet">
+  <form method="dialog">
+    <h2 id="sheetTitle"></h2>
+    <div id="sheetSources" class="choices"></div>
+    <div class="row end">
+      <button type="button" class="ghost" id="sheetCancel">Cancel</button>
+      <button value="go" class="primary" id="sheetGo">Analyze</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="progress" hidden>
+  <div class="ptitle" id="progressTitle"></div>
+  <div class="pbar"><i id="progressBar"></i></div>
+  <div class="pstage" id="progressStage"></div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <button id="title" class="title" title="Library"></button>
+    <div class="meta">
+      <span class="orig" id="orig" title="Original tempo" hidden></span><span class="num" id="bpm" title="Drag to change · double-click to reset"></span><span class="unit">BPM</span>
+      <span class="sep"></span>
+      <span id="key"></span>
+      <span class="sep"></span>
+      <span id="meter"></span>
+    </div>
+    <div class="seg" id="sources"></div>
+    <div class="spacer"></div>
+    <div class="seg" id="bars" title="Bars"></div>
+    <button id="auto" class="pill accent" title="Auto-arrange loop and drums">
+      <svg viewBox="0 0 16 16"><path d="M8 1l1.6 4.4L14 7l-4.4 1.6L8 13l-1.6-4.4L2 7l4.4-1.6z"/></svg>Auto
+    </button>
+    <button id="rec" class="icon" title="Record (Enter)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5"/></svg></button>
+    <button id="play" class="icon" title="Play (Space)"><svg viewBox="0 0 16 16"><path id="playIcon" d="M4.5 2.8v10.4L13 8z"/></svg></button>
+    <button id="undo" class="icon" title="Undo (⌘Z)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h6.5a3.5 3.5 0 010 7H6M3 6.5l3-3M3 6.5l3 3"/></svg></button>
+    <button id="export" class="icon" title="Export loop as WAV"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.5v8M4.8 7.5L8 10.7l3.2-3.2M3 13.5h10"/></svg></button>
+  </header>
+
+  <canvas id="overview"></canvas>
+
+  <section id="pads"></section>
+
+  <section id="editor">
+    <canvas id="zoom"></canvas>
+    <div class="controls">
+      <button id="prev" class="icon sm" title="Previous hit (←)"><svg viewBox="0 0 16 16"><path d="M10.5 3.5v9L4.5 8z"/></svg></button>
+      <button id="next" class="icon sm" title="Next hit (→)"><svg viewBox="0 0 16 16"><path d="M5.5 3.5v9l6-4.5z"/></svg></button>
+      <label>Length</label><div class="seg" id="len"></div>
+      <button id="lenAll" class="toggle" title="Apply length to every pad">All</button>
+      <label>Tune</label><span class="num field" id="tune"></span>
+      <label>Level</label><span class="num field" id="gain"></span>
+      <button id="rev" class="toggle" title="Play this sample backwards">Reverse</button>
+      <label title="Stutter the sample in time with the beat">Chop</label><div class="seg" id="chop"></div>
+      <button id="repick" class="icon sm" title="Find another sample for this pad"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8a5 5 0 11-1.5-3.6M13 2.5v2.4h-2.4"/></svg></button>
+      <div class="spacer"></div>
+      <button id="gate" class="toggle" title="Sound plays only while the key is held">Hold</button>
+      <button id="choke" class="toggle" title="On: samples play on top of each other. Off: each new sample cuts the previous one">Layer</button>
+      <button id="keys" class="toggle" title="Play the selected pad as a pitched instrument (Tab)">Keys</button>
+    </div>
+  </section>
+
+  <section id="seq">
+    <div class="bar">
+      <label>Loop</label>
+      <button id="autoLoop" class="icon sm" title="New arrangement"><svg viewBox="0 0 16 16"><path d="M8 1l1.6 4.4L14 7l-4.4 1.6L8 13l-1.6-4.4L2 7l4.4-1.6z"/></svg></button>
+      <button id="clearLoop" class="icon sm" title="Clear"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+      <div class="spacer"></div>
+      <label>Drums</label>
+      <div class="seg" id="kit"></div>
+      <label>Swing</label><span class="num field" id="swing"></span>
+      <label>Level</label><span class="num field" id="drumVol"></span>
+      <button id="autoDrums" class="icon sm" title="New drum pattern"><svg viewBox="0 0 16 16"><path d="M8 1l1.6 4.4L14 7l-4.4 1.6L8 13l-1.6-4.4L2 7l4.4-1.6z"/></svg></button>
+      <button id="clearDrums" class="icon sm" title="Clear"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="gridwrap"><canvas id="grid"></canvas><i id="head" hidden></i></div>
+  </section>
+</div>
+
+<div id="toast" hidden></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
